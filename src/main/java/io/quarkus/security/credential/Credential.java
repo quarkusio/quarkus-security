@@ -1,4 +1,4 @@
-package io.quarkus.security;
+package io.quarkus.security.credential;
 
 /**
  * Marker interface for all credential sub interfaces.

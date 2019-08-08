@@ -1,10 +1,12 @@
-package io.quarkus.security;
+package io.quarkus.security.identity;
 
 import java.security.Permission;
 import java.security.Principal;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+
+import io.quarkus.security.credential.Credential;
 
 /**
  * Interface that represents the currently logged in user.

@@ -8,7 +8,6 @@ import javax.inject.Qualifier;
 /**
  * A qualifier than can be used to inject the current user.
  *
- *
  */
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)

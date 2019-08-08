@@ -1,4 +1,4 @@
-package io.quarkus.security;
+package io.quarkus.security.identity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +96,9 @@ public class IdentityProviderManager {
          */
         public IdentityProviderManager build() {
             built = true;
+            if (!providers.containsKey(AnonomousIdentityProvider.class)) {
+                throw new IllegalStateException("No AnonymousIdentityProvider registered. An instance of AnonymousIdentityProvider must be provided to allow the Anonymous identity to be created.");
+            }
             return new IdentityProviderManager(this);
         }
     }
