@@ -1,6 +1,7 @@
 package io.quarkus.security.identity;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,10 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 import org.jboss.logging.Logger;
+
+import io.quarkus.security.AuthenticationFailedException;
+import io.quarkus.security.identity.request.AnonymousAuthenticationRequest;
+import io.quarkus.security.identity.request.AuthenticationRequest;
 
 /**
  * A manager that can be used to get a specific type of identity provider.
@@ -118,10 +123,10 @@ public class IdentityProviderManager {
         }
 
         /**
-         * Adds
+         * Adds an augmentor that can modify the security identity that is provided by the identity store.
          *
-         * @param augmenter
-         * @return
+         * @param augmenter The augmentor
+         * @return this builder
          */
         public Builder addSecurityIdentityAugmenter(SecurityIdentityAugmentor augmenter) {
             augmenters.add(augmenter);
@@ -136,6 +141,12 @@ public class IdentityProviderManager {
             if (!providers.containsKey(AnonymousAuthenticationRequest.class)) {
                 throw new IllegalStateException("No AnonymousIdentityProvider registered. An instance of AnonymousIdentityProvider must be provided to allow the Anonymous identity to be created.");
             }
+            augmenters.sort(new Comparator<SecurityIdentityAugmentor>() {
+                @Override
+                public int compare(SecurityIdentityAugmentor o1, SecurityIdentityAugmentor o2) {
+                    return Integer.compare(o2.priority(), o1.priority());
+                }
+            });
             return new IdentityProviderManager(this);
         }
     }

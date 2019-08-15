@@ -1,4 +1,4 @@
-package io.quarkus.security.identity;
+package io.quarkus.security.identity.request;
 
 import io.quarkus.security.credential.PasswordCredential;
 

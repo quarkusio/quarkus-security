@@ -1,9 +1,11 @@
-package io.quarkus.security.identity;
+package io.quarkus.security;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Qualifier;
+
+import io.quarkus.security.identity.IdentityProvider;
 
 /**
  * A qualifier than can be used to inject attributes from the current identity.

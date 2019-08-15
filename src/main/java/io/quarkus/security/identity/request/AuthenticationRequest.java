@@ -1,4 +1,8 @@
-package io.quarkus.security.identity;
+package io.quarkus.security.identity.request;
+
+import io.quarkus.security.identity.IdentityProvider;
+import io.quarkus.security.identity.IdentityProviderManager;
+import io.quarkus.security.identity.SecurityIdentity;
 
 /**
  * A marker interface that represents a request for an authenticated identity.

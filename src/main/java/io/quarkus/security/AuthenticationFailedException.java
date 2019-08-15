@@ -1,4 +1,6 @@
-package io.quarkus.security.identity;
+package io.quarkus.security;
+
+import io.quarkus.security.identity.IdentityProvider;
 
 /**
  * An exception that should be thrown (or otherwise returned to the client for async implementation)
