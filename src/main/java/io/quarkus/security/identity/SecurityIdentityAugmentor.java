@@ -25,15 +25,4 @@ public interface SecurityIdentityAugmentor {
      * @return A completion stage that will resolve to the modified identity
      */
     CompletionStage<SecurityIdentity> augment(SecurityIdentity identity);
-
-    /**
-     * Augments a security identity to allow for modification of the underlying identity.
-     *
-     * @param identity The identity
-     * @return A completion stage that will resolve to the modified identity
-     */
-    default CompletionStage<SecurityIdentity> augment(CompletionStage<SecurityIdentity> identity) {
-        return identity.thenCompose(this::augment);
-    }
-
 }

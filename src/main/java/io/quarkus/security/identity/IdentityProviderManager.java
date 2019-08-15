@@ -1,51 +1,85 @@
 package io.quarkus.security.identity;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+
+import org.jboss.logging.Logger;
 
 /**
  * A manager that can be used to get a specific type of identity provider.
  */
 public class IdentityProviderManager {
+    private static final Logger log = Logger.getLogger(IdentityProviderManager.class);
 
-    private final Map<Class<? extends IdentityProvider>, List<IdentityProvider>> providers;
+    private final Map<Class<? extends AuthenticationRequest>, List<IdentityProvider>> providers;
+    private final List<SecurityIdentityAugmentor> augmenters;
 
     IdentityProviderManager(Builder builder) {
         this.providers = builder.providers;
+        this.augmenters = builder.augmenters;
     }
 
     /**
-     * Gets an {@link IdentityProvider} implementation of a specific type
+     * Attempts to create an authenticated identity for the provided {@link AuthenticationRequest}.
+     * <p>
+     * If authentication succeeds the resulting identity will be augmented with any configured {@link SecurityIdentityAugmentor}
+     * instances that have been registered.
      *
-     * @param type The type of identity provider
-     * @param <T>  The type of identity provider
+     * @param request The authentication request
      * @return The first identity provider that was registered with this type
      */
-    public <T extends IdentityProvider> T getIdentityProvider(Class<T> type) {
-        if (!type.isInterface()) {
-            throw new IllegalArgumentException("IdentityProviderManager only supports interface types. All identity provider implementation must support a more specific IdentityProvider type.");
+    public CompletionStage<SecurityIdentity> authenticate(AuthenticationRequest request) {
+        List<IdentityProvider> providers = this.providers.get(request.getClass());
+        if (providers == null) {
+            CompletableFuture<SecurityIdentity> cf = new CompletableFuture<>();
+            cf.completeExceptionally(new IllegalArgumentException("No IdentityProviders were registered to handle AuthenticationRequest " + request));
+            return cf;
         }
-        List<IdentityProvider> providers = this.providers.getOrDefault(type, Collections.emptyList());
-        return providers.isEmpty() ? null : (T) providers.get(0);
+        return handleProvider(0, (List) providers, request);
     }
 
-
-    /**
-     * Gets all {@link IdentityProvider} implementations of a specific type. If none
-     * are registered this method will return an empty list.
-     *
-     * @param type The type of identity provider
-     * @param <T>  The type of identity provider
-     * @return The first identity provider that was registered with this type, or an empty list
-     */
-    public <T extends IdentityProvider> List<T> getIdentityProviders(Class<T> type) {
-        if (!type.isInterface()) {
-            throw new IllegalArgumentException("IdentityProviderManager only supports interface types. All identity provider implementation must support a more specific IdentityProvider type.");
+    private <T extends AuthenticationRequest> CompletionStage<SecurityIdentity> handleProvider(int pos, List<IdentityProvider<T>> providers, T request) {
+        if (pos == providers.size()) {
+            //we failed to authentication
+            log.debugf("Authentication failed as providers would authenticate the request");
+            CompletableFuture<SecurityIdentity> cf = new CompletableFuture<>();
+            cf.completeExceptionally(new AuthenticationFailedException());
+            return cf;
         }
-        return (List<T>) this.providers.getOrDefault(type, Collections.emptyList());
+        IdentityProvider<T> current = providers.get(pos);
+        CompletionStage<SecurityIdentity> cs = current.authenticate(request).thenCompose(new Function<SecurityIdentity, CompletionStage<SecurityIdentity>>() {
+            @Override
+            public CompletionStage<SecurityIdentity> apply(SecurityIdentity identity) {
+                if (identity != null) {
+                    return CompletableFuture.completedFuture(identity);
+                }
+                return handleProvider(pos + 1, providers, request);
+            }
+        });
+        return cs.thenCompose(new Function<SecurityIdentity, CompletionStage<SecurityIdentity>>() {
+            @Override
+            public CompletionStage<SecurityIdentity> apply(SecurityIdentity identity) {
+                return handleIdentityFromProvider(0, identity);
+            }
+        });
+    }
+
+    private CompletionStage<SecurityIdentity> handleIdentityFromProvider(int pos, SecurityIdentity identity) {
+        if (pos == augmenters.size()) {
+            return CompletableFuture.completedFuture(identity);
+        }
+        SecurityIdentityAugmentor a = augmenters.get(pos);
+        return a.augment(identity).thenCompose(new Function<SecurityIdentity, CompletionStage<SecurityIdentity>>() {
+            @Override
+            public CompletionStage<SecurityIdentity> apply(SecurityIdentity identity) {
+                return handleIdentityFromProvider(pos + 1, identity);
+            }
+        });
     }
 
     /**
@@ -65,7 +99,8 @@ public class IdentityProviderManager {
         Builder() {
         }
 
-        private Map<Class<? extends IdentityProvider>, List<IdentityProvider>> providers = new HashMap<>();
+        private final Map<Class<? extends AuthenticationRequest>, List<IdentityProvider>> providers = new HashMap<>();
+        private final List<SecurityIdentityAugmentor> augmenters = new ArrayList<>();
         private boolean built = false;
 
         /**
@@ -78,16 +113,18 @@ public class IdentityProviderManager {
             if (built) {
                 throw new IllegalStateException("manager has already been built");
             }
-            boolean found = false;
-            for (Class<?> i : provider.getClass().getInterfaces()) {
-                if (i.isAssignableFrom(IdentityProvider.class) && i != IdentityProvider.class) {
-                    found = true;
-                    providers.computeIfAbsent((Class<? extends IdentityProvider>) i, (a) -> new ArrayList<>()).add(provider);
-                }
-            }
-            if (!found) {
-                throw new IllegalArgumentException("IdentityProvider implementation must extend a more specific sub-interface of IdentityProvider");
-            }
+            providers.computeIfAbsent(provider.getRequestType(), (a) -> new ArrayList<>()).add(provider);
+            return this;
+        }
+
+        /**
+         * Adds
+         *
+         * @param augmenter
+         * @return
+         */
+        public Builder addSecurityIdentityAugmenter(SecurityIdentityAugmentor augmenter) {
+            augmenters.add(augmenter);
             return this;
         }
 
@@ -96,7 +133,7 @@ public class IdentityProviderManager {
          */
         public IdentityProviderManager build() {
             built = true;
-            if (!providers.containsKey(AnonomousIdentityProvider.class)) {
+            if (!providers.containsKey(AnonymousAuthenticationRequest.class)) {
                 throw new IllegalStateException("No AnonymousIdentityProvider registered. An instance of AnonymousIdentityProvider must be provided to allow the Anonymous identity to be created.");
             }
             return new IdentityProviderManager(this);
