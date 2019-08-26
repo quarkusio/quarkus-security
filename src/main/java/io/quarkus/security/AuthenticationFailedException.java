@@ -3,7 +3,7 @@ package io.quarkus.security;
 import io.quarkus.security.identity.IdentityProvider;
 
 /**
- * An exception that should be thrown (or otherwise returned to the client for async implementation)
+ * An exception that should be thrown (or otherwise returned to the client for async implementations)
  * by {@link IdentityProvider} implementations if the authentication failed.
  * <p>
  * This can be used by a mechanism to determine if an authentication failure was due to bad credentials vs

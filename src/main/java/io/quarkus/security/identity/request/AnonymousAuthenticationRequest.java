@@ -5,6 +5,6 @@ package io.quarkus.security.identity.request;
  */
 public final class AnonymousAuthenticationRequest implements AuthenticationRequest {
 
-    public static AnonymousAuthenticationRequest INSTANCE = new AnonymousAuthenticationRequest();
+    public static final AnonymousAuthenticationRequest INSTANCE = new AnonymousAuthenticationRequest();
 
 }
