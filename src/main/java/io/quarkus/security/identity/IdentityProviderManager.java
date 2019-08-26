@@ -125,11 +125,11 @@ public class IdentityProviderManager {
         /**
          * Adds an augmentor that can modify the security identity that is provided by the identity store.
          *
-         * @param augmenter The augmentor
+         * @param augmentor The augmentor
          * @return this builder
          */
-        public Builder addSecurityIdentityAugmenter(SecurityIdentityAugmentor augmenter) {
-            augmenters.add(augmenter);
+        public Builder addSecurityIdentityAugmenter(SecurityIdentityAugmentor augmentor) {
+            augmenters.add(augmentor);
             return this;
         }
 
