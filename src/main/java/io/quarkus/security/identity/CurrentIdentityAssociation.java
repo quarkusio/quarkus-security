@@ -12,9 +12,11 @@ public interface CurrentIdentityAssociation {
 
     /**
      * Sets the current security identity for the thread, and returns the old one.
-     * <p>
-     * When the current scope is complete this method should be called again to restore the
-     * old identity.
+     *
+     * It is the responsibility of the implementation/runtime to clear the identity at the appropriate time.
+     *
+     * In general this will be achieved by using a request scoped bean to manage the identity so it is scoped to
+     * the current request.
      *
      * @param identity The new identity
      * @return The old identity

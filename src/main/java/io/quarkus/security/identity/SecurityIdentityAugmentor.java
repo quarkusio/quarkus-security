@@ -24,5 +24,5 @@ public interface SecurityIdentityAugmentor {
      * @param identity The identity
      * @return A completion stage that will resolve to the modified identity
      */
-    CompletionStage<SecurityIdentity> augment(SecurityIdentity identity);
+    CompletionStage<SecurityIdentity> augment(SecurityIdentity identity, AuthenticationRequestContext context);
 }

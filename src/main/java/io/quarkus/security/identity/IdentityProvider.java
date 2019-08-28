@@ -1,6 +1,8 @@
 package io.quarkus.security.identity;
 
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.request.AuthenticationRequest;

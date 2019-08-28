@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 
@@ -23,10 +25,26 @@ public class IdentityProviderManager {
 
     private final Map<Class<? extends AuthenticationRequest>, List<IdentityProvider>> providers;
     private final List<SecurityIdentityAugmentor> augmenters;
+    private final Executor blockingExecutor;
+
+    private static final AuthenticationRequestContext blockingRequestContext = new AuthenticationRequestContext() {
+        @Override
+        public CompletionStage<SecurityIdentity> runBlocking(Supplier<SecurityIdentity> function) {
+            CompletableFuture<SecurityIdentity> ret = new CompletableFuture<>();
+            try {
+                SecurityIdentity result = function.get();
+                ret.complete(result);
+            } catch (Throwable t) {
+                ret.completeExceptionally(t);
+            }
+            return ret;
+        }
+    };
 
     IdentityProviderManager(Builder builder) {
         this.providers = builder.providers;
         this.augmenters = builder.augmenters;
+        this.blockingExecutor = builder.blockingExecutor;
     }
 
     /**
@@ -45,10 +63,28 @@ public class IdentityProviderManager {
             cf.completeExceptionally(new IllegalArgumentException("No IdentityProviders were registered to handle AuthenticationRequest " + request));
             return cf;
         }
-        return handleProvider(0, (List) providers, request);
+        return handleProvider(0, (List) providers, request, new AsyncAthenticationRequestContext());
     }
 
-    private <T extends AuthenticationRequest> CompletionStage<SecurityIdentity> handleProvider(int pos, List<IdentityProvider<T>> providers, T request) {
+    /**
+     * Attempts to create an authenticated identity for the provided {@link AuthenticationRequest} in a blocking manner
+     * <p>
+     * If authentication succeeds the resulting identity will be augmented with any configured {@link SecurityIdentityAugmentor}
+     * instances that have been registered.
+     *
+     * @param request The authentication request
+     * @return The first identity provider that was registered with this type
+     */
+    public SecurityIdentity authenticateBlocking(AuthenticationRequest request) {
+        List<IdentityProvider> providers = this.providers.get(request.getClass());
+        if (providers == null) {
+            CompletableFuture<SecurityIdentity> cf = new CompletableFuture<>();
+            throw new IllegalArgumentException("No IdentityProviders were registered to handle AuthenticationRequest " + request);
+        }
+        return (SecurityIdentity) handleProvider(0, (List) providers, request, blockingRequestContext).toCompletableFuture().join();
+    }
+
+    private <T extends AuthenticationRequest> CompletionStage<SecurityIdentity> handleProvider(int pos, List<IdentityProvider<T>> providers, T request, AuthenticationRequestContext context) {
         if (pos == providers.size()) {
             //we failed to authentication
             log.debugf("Authentication failed as providers would authenticate the request");
@@ -63,26 +99,26 @@ public class IdentityProviderManager {
                 if (identity != null) {
                     return CompletableFuture.completedFuture(identity);
                 }
-                return handleProvider(pos + 1, providers, request);
+                return handleProvider(pos + 1, providers, request, context);
             }
         });
         return cs.thenCompose(new Function<SecurityIdentity, CompletionStage<SecurityIdentity>>() {
             @Override
             public CompletionStage<SecurityIdentity> apply(SecurityIdentity identity) {
-                return handleIdentityFromProvider(0, identity);
+                return handleIdentityFromProvider(0, identity, context);
             }
         });
     }
 
-    private CompletionStage<SecurityIdentity> handleIdentityFromProvider(int pos, SecurityIdentity identity) {
+    private CompletionStage<SecurityIdentity> handleIdentityFromProvider(int pos, SecurityIdentity identity, AuthenticationRequestContext context) {
         if (pos == augmenters.size()) {
             return CompletableFuture.completedFuture(identity);
         }
         SecurityIdentityAugmentor a = augmenters.get(pos);
-        return a.augment(identity).thenCompose(new Function<SecurityIdentity, CompletionStage<SecurityIdentity>>() {
+        return a.augment(identity, context).thenCompose(new Function<SecurityIdentity, CompletionStage<SecurityIdentity>>() {
             @Override
             public CompletionStage<SecurityIdentity> apply(SecurityIdentity identity) {
-                return handleIdentityFromProvider(pos + 1, identity);
+                return handleIdentityFromProvider(pos + 1, identity, context);
             }
         });
     }
@@ -106,6 +142,7 @@ public class IdentityProviderManager {
 
         private final Map<Class<? extends AuthenticationRequest>, List<IdentityProvider>> providers = new HashMap<>();
         private final List<SecurityIdentityAugmentor> augmenters = new ArrayList<>();
+        private Executor blockingExecutor;
         private boolean built = false;
 
         /**
@@ -134,12 +171,24 @@ public class IdentityProviderManager {
         }
 
         /**
+         * @param blockingExecutor The executor to use for blocking tasks
+         * @return this builder
+         */
+        public Builder setBlockingExecutor(Executor blockingExecutor) {
+            this.blockingExecutor = blockingExecutor;
+            return this;
+        }
+
+        /**
          * @return a new {@link IdentityProviderManager}
          */
         public IdentityProviderManager build() {
             built = true;
             if (!providers.containsKey(AnonymousAuthenticationRequest.class)) {
                 throw new IllegalStateException("No AnonymousIdentityProvider registered. An instance of AnonymousIdentityProvider must be provided to allow the Anonymous identity to be created.");
+            }
+            if (blockingExecutor == null) {
+                throw new IllegalStateException("no blocking executor specified");
             }
             augmenters.sort(new Comparator<SecurityIdentityAugmentor>() {
                 @Override
@@ -148,6 +197,34 @@ public class IdentityProviderManager {
                 }
             });
             return new IdentityProviderManager(this);
+        }
+    }
+
+    private class AsyncAthenticationRequestContext implements AuthenticationRequestContext {
+
+        private boolean inBlocking = false;
+
+        @Override
+        public CompletionStage<SecurityIdentity> runBlocking(Supplier<SecurityIdentity> function) {
+            if (inBlocking) {
+                return blockingRequestContext.runBlocking(function);
+            }
+            CompletableFuture<SecurityIdentity> cf = new CompletableFuture<>();
+            blockingExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        inBlocking = true;
+                        cf.complete(function.get());
+                    } catch (Throwable t) {
+                        cf.completeExceptionally(t);
+                    } finally {
+                        inBlocking = false;
+                    }
+                }
+            });
+
+            return cf;
         }
     }
 }
