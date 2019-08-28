@@ -2,6 +2,7 @@ package io.quarkus.security.identity;
 
 import java.security.Permission;
 import java.security.Principal;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -91,6 +92,12 @@ public interface SecurityIdentity {
      * @return The attribute value
      */
     <T> T getAttribute(String name);
+
+    /**
+     *
+     * @return All the request attributes
+     */
+    Map<String, Object> getAttributes();
 
     /**
      * Checks if a user holds a given permissions, and if so will return <code>true</code>.

@@ -35,9 +35,10 @@ public interface IdentityProvider<T extends AuthenticationRequest> {
      * processing to continue.
      *
      * @param request The authentication request
+     * @param context The context of the request
      * @return The future security identity
      */
-    CompletionStage<SecurityIdentity> authenticate(T request);
+    CompletionStage<SecurityIdentity> authenticate(T request, AuthenticationRequestContext context);
 
 
 }
