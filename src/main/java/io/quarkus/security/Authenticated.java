@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
  * {@code RolesAllowed("**")} construct.
  */
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.TYPE})
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Authenticated {
 }
