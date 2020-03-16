@@ -1,7 +1,8 @@
 package io.quarkus.security.identity;
 
-import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
+
+import io.smallrye.mutiny.Uni;
 
 /**
  * A context object that can be used to run blocking tasks
@@ -11,6 +12,6 @@ import java.util.function.Supplier;
  */
 public interface AuthenticationRequestContext {
 
-    CompletionStage<SecurityIdentity> runBlocking(Supplier<SecurityIdentity> function);
+    Uni<SecurityIdentity> runBlocking(Supplier<SecurityIdentity> function);
 
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import io.quarkus.security.credential.Credential;
+import io.smallrye.mutiny.Uni;
 
 /**
  * Interface that represents the currently logged in user.
@@ -94,24 +95,23 @@ public interface SecurityIdentity {
     <T> T getAttribute(String name);
 
     /**
-     *
      * @return All the request attributes
      */
     Map<String, Object> getAttributes();
 
     /**
      * Checks if a user holds a given permissions, and if so will return <code>true</code>.
-     *
+     * <p>
      * This method is asynchronous, as it may involve calls to a remote resource.
      *
      * @param permission The permission
      * @return A completion stage that will resolve to true if the user has the specified permission
      */
-    CompletionStage<Boolean> checkPermission(Permission permission);
+    Uni<Boolean> checkPermission(Permission permission);
 
     /**
      * Checks if a user holds a given permissions, and if so will return <code>true</code>.
-     *
+     * <p>
      * This method is a blocking version of {@link #checkPermission(Permission)}. By default it will
      * just wait for the {@link CompletionStage} to be complete, however it is likely that some implementations
      * will want to provide a more efficient version.
@@ -121,7 +121,7 @@ public interface SecurityIdentity {
      */
     default boolean checkPermissionBlocking(Permission permission) {
         try {
-            return checkPermission(permission).toCompletableFuture().join();
+            return checkPermission(permission).await().indefinitely();
         } catch (CompletionException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
