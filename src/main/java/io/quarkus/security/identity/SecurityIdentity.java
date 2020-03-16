@@ -4,7 +4,6 @@ import java.security.Permission;
 import java.security.Principal;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import io.quarkus.security.credential.Credential;
@@ -39,27 +38,30 @@ public interface SecurityIdentity {
     /**
      * Returns the set of all roles held by the user. These roles must be resolvable in advance for every request.
      * <p>
-     * If more advanced authorization support is required than can be provided by a simple role based system
-     * then {@link #checkPermission(Permission)} and {@link #checkPermissionBlocking(Permission)} should be used
-     * instead.
+     * Note that this method is deprecated, and roles are returned on a best effort basis. To actually check if
+     * a user holds a role {@link #hasRole(String)} should be used instead. Some API's (e.g. JAX-RS) do not allow
+     * for all roles to be returned, so this method was deprecated in order to better integrate with  them.
+     *
      * <p>
      * This set should either be unmodifiable, or a defensive copy so attempts to change the role set do not modify
      * the underlying identity.
      *
      * @return The set of all roles held by the user
      */
+    @Deprecated
     Set<String> getRoles();
 
     /**
-     * Checks if a user has a given role. This is a convenience method that is equivalent to
-     * <code>getRoles().contains(role);</code>.
+     * Checks if a user has a given role. These roles must be resolvable in advance for every request.
+     * <p>
+     * If more advanced authorization support is required than can be provided by a simple role based system
+     * then {@link #checkPermission(Permission)} and {@link #checkPermissionBlocking(Permission)} should be used
+     * instead.
+     * <p>
      *
-     * @param role The role
-     * @return <code>true</code> if the identity has the specified role
+     * @return <code>true</code> if the identity has the specified role.
      */
-    default boolean hasRole(String role) {
-        return getRoles().contains(role);
-    }
+    boolean hasRole(String role);
 
     /**
      * Gets the users credential of the given type, or <code>null</code> if a credential of the given type is not
@@ -120,13 +122,6 @@ public interface SecurityIdentity {
      * @return A completion stage that will resolve to true if the user has the specified permission
      */
     default boolean checkPermissionBlocking(Permission permission) {
-        try {
-            return checkPermission(permission).await().indefinitely();
-        } catch (CompletionException e) {
-            if (e.getCause() instanceof RuntimeException) {
-                throw (RuntimeException) e.getCause();
-            }
-            throw e;
-        }
+        return checkPermission(permission).await().indefinitely();
     }
 }
