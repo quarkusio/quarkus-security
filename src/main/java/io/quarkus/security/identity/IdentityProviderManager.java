@@ -1,8 +1,7 @@
 package io.quarkus.security.identity;
 
-import java.util.concurrent.CompletionStage;
-
 import io.quarkus.security.identity.request.AuthenticationRequest;
+import io.smallrye.mutiny.Uni;
 
 /**
  * A manager that can be used to get a specific type of identity provider.
@@ -18,7 +17,7 @@ public interface IdentityProviderManager {
      * @param request The authentication request
      * @return The first identity provider that was registered with this type
      */
-    CompletionStage<SecurityIdentity> authenticate(AuthenticationRequest request);
+    Uni<SecurityIdentity> authenticate(AuthenticationRequest request);
 
     /**
      * Attempts to create an authenticated identity for the provided {@link AuthenticationRequest} in a blocking manner

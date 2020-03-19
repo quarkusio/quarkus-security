@@ -1,11 +1,8 @@
 package io.quarkus.security.identity;
 
-import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import io.quarkus.security.AuthenticationFailedException;
 import io.quarkus.security.identity.request.AuthenticationRequest;
+import io.smallrye.mutiny.Uni;
 
 /**
  * <p>
@@ -19,7 +16,6 @@ import io.quarkus.security.identity.request.AuthenticationRequest;
 public interface IdentityProvider<T extends AuthenticationRequest> {
 
     /**
-     *
      * @return The type of request this store can handle
      */
     Class<T> getRequestType();
@@ -38,7 +34,7 @@ public interface IdentityProvider<T extends AuthenticationRequest> {
      * @param context The context of the request
      * @return The future security identity
      */
-    CompletionStage<SecurityIdentity> authenticate(T request, AuthenticationRequestContext context);
+    Uni<SecurityIdentity> authenticate(T request, AuthenticationRequestContext context);
 
 
 }
