@@ -38,9 +38,11 @@ public interface SecurityIdentity {
     /**
      * Returns the set of all roles held by the user. These roles must be resolvable in advance for every request.
      * <p>
-     * Note that this method is deprecated, and roles are returned on a best effort basis. To actually check if
+     * Note that roles are returned on a best effort basis. To actually check if
      * a user holds a role {@link #hasRole(String)} should be used instead. Some API's (e.g. JAX-RS) do not allow
-     * for all roles to be returned, so this method was deprecated in order to better integrate with  them.
+     * for all roles to be returned, so if the underlying user representation does not support retrieving all the roles
+     * this method will not always be reliable. In general all built in Quarkus security extensions should provide this,
+     * unless it is documented otherwise.
      *
      * <p>
      * This set should either be unmodifiable, or a defensive copy so attempts to change the role set do not modify
@@ -48,7 +50,6 @@ public interface SecurityIdentity {
      *
      * @return The set of all roles held by the user
      */
-    @Deprecated
     Set<String> getRoles();
 
     /**
