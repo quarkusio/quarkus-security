@@ -12,7 +12,7 @@
 
     <groupId>io.quarkus.security</groupId>
     <artifactId>quarkus-security</artifactId>
-    <version>1.1.2.Final-SNAPSHOT</version>
+    <version>1.1.2.Final</version>
 
     <properties>
         <cdi-api.version>2.0.SP1</cdi-api.version>
