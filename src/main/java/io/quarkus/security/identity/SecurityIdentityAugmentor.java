@@ -15,7 +15,9 @@ public interface SecurityIdentityAugmentor {
     /**
      * @return The priority
      */
-    int priority();
+    default int priority() {
+        return 0;
+    }
 
     /**
      * Augments a security identity to allow for modification of the underlying identity.
