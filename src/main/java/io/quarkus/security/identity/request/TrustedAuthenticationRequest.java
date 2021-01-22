@@ -4,7 +4,7 @@ package io.quarkus.security.identity.request;
 /**
  * A request to authenticate from a trusted source, such as an encrypted cookie
  */
-public class TrustedAuthenticationRequest implements AuthenticationRequest {
+public class TrustedAuthenticationRequest extends BaseAuthenticationRequest implements AuthenticationRequest {
 
     private final String principal;
 
