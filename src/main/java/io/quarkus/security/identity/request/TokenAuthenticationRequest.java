@@ -5,7 +5,7 @@ import io.quarkus.security.credential.TokenCredential;
 /**
  * An simple authentication request that uses a token
  */
-public class TokenAuthenticationRequest implements AuthenticationRequest {
+public class TokenAuthenticationRequest extends BaseAuthenticationRequest implements AuthenticationRequest {
 
     private final TokenCredential token;
 

@@ -5,7 +5,7 @@ import io.quarkus.security.credential.PasswordCredential;
 /**
  * An simple authentication request that uses a username and password
  */
-public class UsernamePasswordAuthenticationRequest implements AuthenticationRequest {
+public class UsernamePasswordAuthenticationRequest extends BaseAuthenticationRequest implements AuthenticationRequest {
 
     private final String username;
     private final PasswordCredential password;
