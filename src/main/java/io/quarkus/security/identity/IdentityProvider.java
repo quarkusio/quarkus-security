@@ -16,6 +16,16 @@ import io.smallrye.mutiny.Uni;
 public interface IdentityProvider<T extends AuthenticationRequest> {
 
     /**
+     * The lowest priority provider Quarkus will register
+     */
+    int SYSTEM_LAST = 0;
+
+    /**
+     * The highest priority provider Quarkus will register
+     */
+    int SYSTEM_FIRST = 1000;
+
+    /**
      * @return The type of request this store can handle
      */
     Class<T> getRequestType();
@@ -36,5 +46,16 @@ public interface IdentityProvider<T extends AuthenticationRequest> {
      */
     Uni<SecurityIdentity> authenticate(T request, AuthenticationRequestContext context);
 
+    /**
+     * Returns the priority of this identity provider. System providers
+     * have a priority between 0 and 1000 by default, so to guarantee that
+     * your provider runs before the Quarkus ones it's priority should be
+     * over 1000.
+     *
+     * @return The priority of this identity provider
+     */
+    default int priority() {
+        return SYSTEM_FIRST + 1;
+    }
 
 }
