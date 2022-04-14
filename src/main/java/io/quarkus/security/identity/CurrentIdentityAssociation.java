@@ -1,6 +1,6 @@
 package io.quarkus.security.identity;
 
-import javax.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.CDI;
 
 import io.smallrye.mutiny.Uni;
 
