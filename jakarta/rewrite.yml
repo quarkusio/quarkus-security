@@ -1,0 +1,16 @@
+---
+type: specs.openrewrite.org/v1beta/style
+name: io.quarkus.style.maven
+styleConfigs:
+  - org.openrewrite.xml.style.TabsAndIndentsStyle:
+      useTabCharacter: false
+      tabSize: 1
+      indentSize: 4
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: io.quarkus.jakarta-versions
+displayName: Adjust Jakarta versions
+recipeList:
+  - org.openrewrite.maven.ChangePropertyValue:
+      key: cdi-api.version
+      newValue: 3.0.0
