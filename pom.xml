@@ -47,6 +47,13 @@
         </license>
     </licenses>
 
+    <scm>
+        <connection>scm:git:git@github.com:quarkusio/quarkus-security.git</connection>
+        <developerConnection>scm:git:git@github.com:quarkusio/quarkus-security.git</developerConnection>
+        <url>https://github.com/quarkus/quarkus-security</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <distributionManagement>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
