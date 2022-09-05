@@ -41,3 +41,6 @@ rewrite_module .
 transform_module src
 
 mvn versions:set -DnewVersion=2.0.0-SNAPSHOT -DprocessAllModules -DgenerateBackupPoms=false
+
+git add .
+git commit -m 'Transform sources to Jakarta EE 10'
