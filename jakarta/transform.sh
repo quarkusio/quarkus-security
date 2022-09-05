@@ -40,4 +40,4 @@ convert_service_file () {
 rewrite_module .
 transform_module src
 
-mvn versions:set -DnewVersion=2.0.0-SNAPSHOT -DprocessAllModules
+mvn versions:set -DnewVersion=2.0.0-SNAPSHOT -DprocessAllModules -DgenerateBackupPoms=false
