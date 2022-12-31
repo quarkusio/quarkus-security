@@ -6,7 +6,7 @@ package io.quarkus.security;
  * For example, it can be used during an OpenId Connect authorization code flow to redirect
  * the user to the original request URI which was used before the authorization code flow has started.
  */
-public class AuthenticationRedirectException extends RuntimeException {
+public class AuthenticationRedirectException extends RuntimeException implements AuthenticationException {
 
     final int code;
     final String redirectUri;

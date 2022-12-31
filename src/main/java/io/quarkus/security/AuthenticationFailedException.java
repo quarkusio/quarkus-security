@@ -10,7 +10,7 @@ import io.quarkus.security.identity.IdentityProvider;
  * This can be used by a mechanism to determine if an authentication failure was
  * due to bad credentials vs some other form of internal failure.
  */
-public final class AuthenticationFailedException extends SecurityException {
+public final class AuthenticationFailedException extends SecurityException implements AuthenticationException {
     public AuthenticationFailedException() {
 
     }
