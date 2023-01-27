@@ -7,7 +7,7 @@ package io.quarkus.security;
  * after the user has already authenticated at the IDP site but a state parameter is not available after
  * a redirect back to the Quarkus endpoint or if the code flow can not be completed for some other reasons.
  */
-public class AuthenticationCompletionException extends RuntimeException {
+public class AuthenticationCompletionException extends RuntimeException implements AuthenticationException {
 
     public AuthenticationCompletionException() {
 
