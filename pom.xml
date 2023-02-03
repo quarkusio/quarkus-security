@@ -10,7 +10,7 @@
 
     <groupId>io.quarkus.security</groupId>
     <artifactId>quarkus-security</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0.Final</version>
 
     <properties>
         <cdi-api.version>4.0.1</cdi-api.version>
@@ -48,7 +48,7 @@
         <connection>scm:git:git@github.com:quarkusio/quarkus-security.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/quarkus-security.git</developerConnection>
         <url>https://github.com/quarkus/quarkus-security</url>
-        <tag>HEAD</tag>
+        <tag>2.0.0.Final</tag>
     </scm>
 
     <distributionManagement>
