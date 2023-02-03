@@ -62,22 +62,6 @@
         </repository>
     </distributionManagement>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.openrewrite.maven</groupId>
-                <artifactId>rewrite-maven-plugin</artifactId>
-                <version>4.21.0</version>
-                <configuration>
-                    <configLocation>${maven.multiModuleProjectDirectory}/jakarta/rewrite.yml</configLocation>
-                    <activeRecipes>
-                        <recipe>io.quarkus.jakarta-versions</recipe>
-                    </activeRecipes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <profiles>
         <profile>
             <id>release</id>
