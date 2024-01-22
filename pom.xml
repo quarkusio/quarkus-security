@@ -14,7 +14,7 @@
 
     <properties>
         <cdi-api.version>4.0.1</cdi-api.version>
-        <jboss-logging.version>3.5.0.Final</jboss-logging.version>
+        <jboss-logging.version>3.5.3.Final</jboss-logging.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <mutiny.version>2.1.0</mutiny.version>
     </properties>
