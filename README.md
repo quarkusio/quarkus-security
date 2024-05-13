@@ -1,9 +1,9 @@
-Quarkus Security
-================
+Quarkus Security API
+====================
 
-[![Version](https://img.shields.io/maven-central/v/io.quarkus.security/quarkus-security?logo=apache&style=for-the-badge)](https://search.maven.org/artifact/io.quarkus.security/quarkus-security)
+[![Version](https://img.shields.io/maven-central/v/io.quarkus.security/quarkus-security-api?logo=apache&style=for-the-badge)](https://search.maven.org/artifact/io.quarkus.security/quarkus-security-api)
 
-The Quarkus core security implementation.
+The Quarkus core security API.
 
 ## Release
 
