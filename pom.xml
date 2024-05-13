@@ -9,7 +9,7 @@
     </parent>
 
     <groupId>io.quarkus.security</groupId>
-    <artifactId>quarkus-security</artifactId>
+    <artifactId>quarkus-security-api</artifactId>
     <version>2.0.4.Final-SNAPSHOT</version>
 
     <properties>
