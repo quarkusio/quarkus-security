@@ -31,6 +31,14 @@ public interface SecurityIdentity {
     Principal getPrincipal();
 
     /**
+     * @param clazz {@link Principal} subclass
+     * @return the {@link Principal} subclass representing the current user.
+     */
+    default <T extends Principal> T getPrincipal(Class<T> clazz) {
+        return clazz.cast(getPrincipal());
+    }
+
+    /**
      * @return <code>true</code> if this identity represents an anonymous (i.e. not logged in) user
      */
     boolean isAnonymous();
