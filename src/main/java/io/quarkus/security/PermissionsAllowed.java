@@ -32,38 +32,50 @@ public @interface PermissionsAllowed {
 
     /**
      * Constant value for {@link #params()} indicating that the constructor parameters of the {@link #permission()}
-     * should be autodetected. That is, each constructor argument data type must exactly match a data type of at least
-     * one argument of the secured method.
-     *
-     * For example consider following permission:
-     *
+     * should be autodetected based on formal parameter names. For example, consider following method secured with this
+     * annotation:
      * <pre>
+     * {@code
+     * &#64;PermissionsAllowed(value = "resource:retrieve", permission = UserPermission.class)
+     * public Resource getResource(String param1, String param2, String param3) {
+     *      // business logic
+     * }
+     * }
+     * </pre>
+     * The {@code getResource} method parameters {@code param1} and {@code param3} will be
+     * matched with the {@code UserPermission} constructor parameters {@code param1} and {@code param3}.
+     * <pre>
+     * {@code
      * public class UserPermission extends Permission {
      *
-     *     private final User user;
-     *
-     *     public UserPermission(String name, User user) {
-     *         super(name);
-     *         this.user = user;
+     *     public UserPermission(String name, String param3, String param1) {
+     *         ...
      *     }
      *
      *     ...
      * }
-     * </pre>
-     *
-     * Constructor parameter {@code user} is in fact object passed to a secured method.
-     * In the example below, {@code user1} parameter of the 'getResource' method is passed to the constructor.
-     *
+     * }
+     * If no method parameter name matches the constructor parameter name, Quarkus checks names of fields and methods
+     * declared on the method parameter type.
+     * For example:
      * <pre>
-     * &#64;PermissionsAllowed(permission = UserPermission.class, value = "resource")
-     * public Resource getResource(User user1) {
-     *     // business logic
+     * {@code
+     * record BeanParam2(String param1, String param2) {}
+     * record BeanParam3(String param3) {}
+     * record BeanParam1(BeanParam2 beanParam2, BeanParam3 beanParam3) {
+     *
+     * }
+     *
+     * &#64;PermissionsAllowed(value = "resource:retrieve", permission = UserPermission.class)
+     * public Resource getResource(BeanParam1 beanParam) {
+     *      // business logic
+     * }
+     *
+     * }
      * }
      * </pre>
-     *
-     * Constructor parameters are always selected as the first secured method parameter with exactly matching data type.
-     * There is no limit to a reasonable number of parameters passed to the permission constructor this way.
-     * Please see {@link #params()} for more complex matching.
+     * In this example, resolution of the {@code param1} and {@code param3} formal parameters is unambiguous.
+     * For more complex scenarios, we suggest to specify {@link #params()} explicitly.
      */
     String AUTODETECTED = "<<autodetected>>";
 
@@ -203,6 +215,45 @@ public @interface PermissionsAllowed {
      * <p>
      * <b>WARNING:</b> "params" attribute is only supported in the scenarios explicitly named in the Quarkus documentation.
      * </p>
+     *
+     * Method parameter fields or methods can be passed to a Permission constructor as well.
+     * Consider the following secured method and its parameters:
+     * <pre>
+     * {@code
+     * &#64;PermissionsAllowed(permission = UserPermission.class, value = "resource", params = {"admin1.param1", "user1.param3"})
+     * public Resource getResource(User user, User user1, Admin admin, Admin admin1) {
+     *     // business logic
+     * }
+     * class ResourceIdentity {
+     *     private final String param1;
+     *
+     *     public String getParam1() {
+     *         return param1;
+     *     }
+     * }
+     * class User extends ResourceIdentity {
+     *     public String getParam3() {
+     *         return "param3";
+     *     }
+     * }
+     * class Admin extends ResourceIdentity { }
+     * }
+     * </pre>
+     *
+     * The corresponding {@code UserPermission} constructor would look like this:
+     *
+     * <pre>
+     * public class UserPermission extends Permission {
+     *
+     *     public UserPermission(String name, String param1, String param3) {
+     *     }
+     *
+     *     ...
+     * }
+     * </pre>
+     *
+     * Here, the constructor parameter {@code param1} refers to the {@code admin1#param1} secured method parameter
+     * and the constructor parameter {@code param3} to the {@code user1#getParam3} secured method parameter.
      *
      * @see #AUTODETECTED
      *
