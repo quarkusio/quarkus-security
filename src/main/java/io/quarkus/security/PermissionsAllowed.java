@@ -9,20 +9,7 @@ import java.lang.annotation.Target;
 import java.security.Permission;
 
 /**
- * Indicates that a resource can only be accessed by a user with one of permissions specified through {@link #value()}.
- * There are some situations where you want to require more than one permission, this can be achieved by repeating
- * annotation. Please see an example below:
- *
- * <pre>
- * &#64;PermissionsAllowed("create")
- * &#64;PermissionsAllowed("update")
- * public Resource createOrUpdate(Long id) {
- *     // business logic
- * }
- * </pre>
- *
- * To put it another way, permissions specified by one annotation instance are disjunctive and the permission check is
- * only true if all annotation instances are evaluated as true.
+ * Lists one or more required permissions that must be granted.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -32,7 +19,7 @@ public @interface PermissionsAllowed {
 
     /**
      * Constant value for {@link #params()} indicating that the constructor parameters of the {@link #permission()}
-     * should be autodetected based on formal parameter names. For example, consider following method secured with this
+     * should be autodetected based on formal parameter names. For example, consider the following method secured with this
      * annotation:
      * <pre>
      * {@code
@@ -81,7 +68,7 @@ public @interface PermissionsAllowed {
 
     /**
      * Colon is used to separate a {@link Permission#getName()} and an element of the {@link Permission#getActions()}.
-     * For example, {@link StringPermission} created for method 'getResource':
+     * For example, {@link StringPermission} created for the 'getResource' method:
      *
      * <pre>
      * &#64;PermissionsAllowed("resource:retrieve")
@@ -97,8 +84,9 @@ public @interface PermissionsAllowed {
     String PERMISSION_TO_ACTION_SEPARATOR = ":";
 
     /**
-     * Specifies a list of permissions that grants the access to the resource. It is also possible to define permission's
-     * actions that are permitted for the resource. Yet again, consider method 'getResource':
+     * Specifies a list of permissions that grants access to the resource.
+     * It is also possible to define permission actions that are permitted for the resource.
+     * Consider the `getResource` method:
      *
      * <pre>
      * &#64;PermissionsAllowed({"resource:crud", "resource:retrieve", "system-resource:retrieve"})
@@ -107,15 +95,15 @@ public @interface PermissionsAllowed {
      * }
      * </pre>
      *
-     * Two {@link StringPermission}s will be created:
+     * Two {@link StringPermission} permissions will be created:
      *
      * <pre>
      * var pem1 = new StringPermission("resource", "crud", "retrieve");
      * var pem2 = new StringPermission("system-resource", "retrieve");
      * </pre>
      *
-     * And the permission check will pass if either {@code pem1} or {@code pem2} implies user permissions.
-     * Technically, it is also possible to both define actions and no action for same-named permission like this:
+     * The permission check will pass if either {@code pem1} or {@code pem2} implies user permissions.
+     * It is also possible to combine permissions with and without actions like this:
      *
      * <pre>
      * &#64;PermissionsAllowed({"resource:crud", "resource:retrieve", "natural-resource"})
@@ -130,19 +118,26 @@ public @interface PermissionsAllowed {
      * var pem1 = new StringPermission("resource", "crud", "retrieve");
      * var pem2 = new StringPermission("natural-resource");
      * </pre>
+     * Alternatively, when multiple required permissions must be listed, you can repeat the annotation, for example:
+     * <pre>
+     * &#64;PermissionsAllowed("create")
+     * &#64;PermissionsAllowed("update")
+     * public Resource createOrUpdate(Long id) {
+          // business logic
+     * }
+     * </pre>
      *
-     * To see how the example above is evaluated, please see "implies" method of your {@link #permission()}.
+     * @see StringPermission#implies(Permission) for more details on how the above example is evaluated.
      *
-     * @see StringPermission#implies(Permission) for more details on how above-mentioned example is evaluated
-     *
-     * @return permissions linked to respective actions
+     * @return permissions
      */
     String[] value();
 
     /**
-     * Choose a relation between permissions specified via {@link #value()}. By default, at least one of permissions
-     * is required (please see the example above). You can require all of them by setting `inclusive` to `true`.
-     * Let's re-use same example and make permissions inclusive:
+     * Choose a relation between multiple permissions specified in {@link #value()}.
+     * By default, at least one of permissions must be granted.
+     * You can request that all of the listed  permissions by setting the `inclusive` property to `true`.
+     * For example:
      *
      * <pre>
      * &#64;PermissionsAllowed(value = {"resource:crud", "resource:retrieve", "natural-resource"}, inclusive = true)
@@ -158,7 +153,7 @@ public @interface PermissionsAllowed {
      * var pem2 = new StringPermission("system-resource", "retrieve");
      * </pre>
      *
-     * And the permission check will pass if <b>both</b> {@code pem1} and {@code pem2} implies user permissions.
+     * And the permission check will pass if <b>both</b> {@code pem1} and {@code pem2} imply user permissions.
      *
      * @return `true` if permissions should be inclusive
      */
@@ -166,7 +161,7 @@ public @interface PermissionsAllowed {
 
     /**
      * Mark parameters of the annotated method that should be passed to the constructor of the {@link #permission()}.
-     * First, let's define ourselves three classes:
+     * Consider the following three classes:
      *
      * <pre>
      * class ResourceIdentity { }
@@ -174,7 +169,7 @@ public @interface PermissionsAllowed {
      * class Admin extends ResourceIdentity { }
      * </pre>
      *
-     * Now that we have defined parameter data types, please consider the secured method 'getResource':
+     * Next, consider the secured 'getResource' method:
      *
      * <pre>
      * &#64;PermissionsAllowed(permission = UserPermission.class, value = "resource", params = {user1, admin1})
@@ -183,7 +178,7 @@ public @interface PermissionsAllowed {
      * }
      * </pre>
      *
-     * In the example above, we marked parameters {@code user1} and {@code admin1} as {@link #permission()} constructor
+     * In the example above, the parameters {@code user1} and {@code admin1} are marked as {@link #permission()} constructor
      * arguments:
      *
      * <pre>
@@ -202,19 +197,13 @@ public @interface PermissionsAllowed {
      * }
      * </pre>
      *
-     * Please mention that:
+     * Please note that:
      * <ul>
-     * <li>constructor parameter names {@code user1} and {@code admin1} must exactly match respective "params",</li>
-     * <li>"ResourceIdentity" could be used as constructor parameter data type, for "User" and "Admin" are assignable
-     * from "ResourceIdentity",</li>
-     * <li>"getResource" parameters {@code user} and {@code admin} are not passed to the "UserPermission" constructor.</li>
+     * <li>The constructor parameter names {@code user1} and {@code admin1} must match respective {@code PermissionsAllowed#params}</li>
+     * <li>`ResourceIdentity` can also be used as a constructor parameter data type</li>
      * </ul>
      *
-     * When this annotation is used as the class-level annotation, same requirements are put on every single secured method.
-     *
-     * <p>
-     * <b>WARNING:</b> "params" attribute is only supported in the scenarios explicitly named in the Quarkus documentation.
-     * </p>
+     * When this annotation is used as the class-level annotation, it applies to every secured method in the class.
      *
      * Method parameter fields or methods can be passed to a Permission constructor as well.
      * Consider the following secured method and its parameters:
@@ -252,8 +241,8 @@ public @interface PermissionsAllowed {
      * }
      * </pre>
      *
-     * Here, the constructor parameter {@code param1} refers to the {@code admin1#param1} secured method parameter
-     * and the constructor parameter {@code param3} to the {@code user1#getParam3} secured method parameter.
+     * The constructor parameter {@code param1} refers to the {@code admin1#param1} secured method parameter
+     * and the constructor parameter {@code param3} refers to the {@code user1#getParam3} secured method parameter.
      *
      * @see #AUTODETECTED
      *
@@ -262,7 +251,7 @@ public @interface PermissionsAllowed {
     String[] params() default AUTODETECTED;
 
     /**
-     * The class that extends the {@link Permission} class, used to create permissions specified via {@link #value()}.
+     * The class that extends the {@link Permission} class to create a permission specified in {@link #value()}.
      *
      * For example:
      *
@@ -287,8 +276,7 @@ public @interface PermissionsAllowed {
     Class<? extends Permission> permission() default StringPermission.class;
 
     /**
-     * The repeatable holder for {@link PermissionsAllowed}. The annotation is not repeatable on class-level as
-     * repeatable interceptor bindings declared on classes are not supported by Quarkus.
+     * The repeatable holder for {@link PermissionsAllowed}. The annotation can only be repeatable on methods.
      */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)

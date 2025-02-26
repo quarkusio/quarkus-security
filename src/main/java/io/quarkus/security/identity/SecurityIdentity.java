@@ -4,51 +4,49 @@ import java.security.Permission;
 import java.security.Principal;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
 
 import io.quarkus.security.credential.Credential;
 import io.smallrye.mutiny.Uni;
 
 /**
- * Interface that represents the currently logged in user.
+ * Interface that represents the current security identity such as a logged-in user or other authenticated subject.
  * <p>
- * Instances of this class will always be available for injection even if no user is currently
- * logged in. In this case {@link #isAnonymous()} will return <code>true</code>, and the user
- * will generally not have any roles (although some implementation may assign roles to anonymous users).
+ * Instances of this class will always be available for injection even if no authentication has taken place.
+ * In this case {@link #isAnonymous()} will return <code>true</code>, and the security identity will generally have no roles.
  * <p>
  * Implementations should be immutable.
  */
 public interface SecurityIdentity {
 
     /**
-     * The attribute name that is used to store the underlying user representation.
+     * The attribute name that is used to store the underlying security identity representation.
      */
     String USER_ATTRIBUTE = "quarkus.user";
 
     /**
-     * @return the {@link Principal} representing the current user.
+     * @return the {@link Principal} representing the current security identity.
      */
     Principal getPrincipal();
 
     /**
      * @param clazz {@link Principal} subclass
-     * @return the {@link Principal} subclass representing the current user.
+     * @return the {@link Principal} subclass representing the current security identity.
      */
     default <T extends Principal> T getPrincipal(Class<T> clazz) {
         return clazz.cast(getPrincipal());
     }
 
     /**
-     * @return <code>true</code> if this identity represents an anonymous (i.e. not logged in) user
+     * @return <code>true</code> if this identity is anonymous
      */
     boolean isAnonymous();
 
     /**
-     * Returns the set of all roles held by the user. These roles must be resolvable in advance for every request.
+     * Returns the set of all roles held by the security identity. These roles must be resolvable in advance for every request.
      * <p>
      * Note that roles are returned on a best effort basis. To actually check if
      * a user holds a role {@link #hasRole(String)} should be used instead. Some API's (e.g. JAX-RS) do not allow
-     * for all roles to be returned, so if the underlying user representation does not support retrieving all the roles
+     * for all roles to be returned, so if the underlying identity representation does not support retrieving all the roles
      * this method will not always be reliable. In general all built in Quarkus security extensions should provide this,
      * unless it is documented otherwise.
      *
@@ -61,7 +59,7 @@ public interface SecurityIdentity {
     Set<String> getRoles();
 
     /**
-     * Checks if a user has a given role. These roles must be resolvable in advance for every request.
+     * Checks if a security identity has a given role. These roles must be resolvable in advance for every request.
      * <p>
      * If more advanced authorization support is required than can be provided by a simple role based system
      * then {@link #checkPermission(Permission)} and {@link #checkPermissionBlocking(Permission)} should be used
@@ -73,7 +71,7 @@ public interface SecurityIdentity {
     boolean hasRole(String role);
 
     /**
-     * Gets the users credential of the given type, or <code>null</code> if a credential of the given type is not
+     * Gets the security identity credential of the given type, or <code>null</code> if a credential of the given type is not
      * present.
      *
      * @param credentialType The type of the credential
@@ -83,7 +81,7 @@ public interface SecurityIdentity {
     <T extends Credential> T getCredential(Class<T> credentialType);
 
     /**
-     * Returns a set of all credentials owned by this user.
+     * Returns a set of all credentials owned by this security identity.
      *
      * @return a set of all credentials
      */
@@ -111,24 +109,22 @@ public interface SecurityIdentity {
     Map<String, Object> getAttributes();
 
     /**
-     * Checks if a user holds a given permissions, and if so will return <code>true</code>.
+     * Checks if a security identity holds a given permission.
      * <p>
      * This method is asynchronous, as it may involve calls to a remote resource.
      *
      * @param permission The permission
-     * @return A completion stage that will resolve to true if the user has the specified permission
+     * @return Uni that will resolve to true if the security identity has the specified permission
      */
     Uni<Boolean> checkPermission(Permission permission);
 
     /**
-     * Checks if a user holds a given permissions, and if so will return <code>true</code>.
+     * Checks if a user holds a given permission.
      * <p>
-     * This method is a blocking version of {@link #checkPermission(Permission)}. By default it will
-     * just wait for the {@link CompletionStage} to be complete, however it is likely that some implementations
-     * will want to provide a more efficient version.
+     * This method is a blocking version of {@link #checkPermission(Permission)}..
      *
      * @param permission The permission
-     * @return A completion stage that will resolve to true if the user has the specified permission
+     * @return true if the security identity has the specified permission
      */
     default boolean checkPermissionBlocking(Permission permission) {
         return checkPermission(permission).await().indefinitely();

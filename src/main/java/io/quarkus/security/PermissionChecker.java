@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation that can be used to annotate a CDI bean method that checks
- * if a {@link io.quarkus.security.identity.SecurityIdentity} holds a permission specified by the {@link #value()}.
+ * if a matching {@link PermissionsAllowed} permission with the {@link #value()} name can be granted.
  * For example:
  * <pre>
  * {@code
@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * }
  * }
  * </pre>
- * The permission checker methods can include any of secured method parameters (matched by name).
+ * The permission checker methods can include any of the secured method parameters, matched by name.
  * Consider the following secured method:
  * <pre>
  * {@code
@@ -37,8 +37,8 @@ import java.lang.annotation.Target;
  * }
  * }
  * </pre>
- * The permission checker that grants access to the {@code updateString} method can inject
- * any arguments it requires and optionally even {@link io.quarkus.security.identity.SecurityIdentity}:
+ * The permission checker that grants access to the {@code updateString} method can include
+ * any of the {@code updateString} method parameters, {@link io.quarkus.security.identity.SecurityIdentity} can also be included:
  * <pre>
  * {@code
  * &#64;PermissionChecker("update")
@@ -47,8 +47,34 @@ import java.lang.annotation.Target;
  * }
  * }
  * </pre>
- * The permission checker method parameters are matched with the secured method parameters in exactly same fashion
- * as are constructor parameters of a custom permission. Please see {@link PermissionsAllowed#params()} for more information.
+ * The permission checker method parameters are matched with the secured method parameters exactly the same way as
+ * the constructor parameters of a custom permission are. Please see {@link PermissionsAllowed#params()} for more information.
+ * <pre>
+ * If the {@link PermissionsAllowed} annotation lists several permission names and its {@link PermissionsAllowed#inclusive} property is set to `true` then an equal number of permission checker methods must be available.
+ * Consider the following secured method:
+ * <pre>
+ * {@code
+ * &#64;PermissionsAllowed(value={"read:all", "write"}, inclusive=true)
+ * public String readWriteString(String a) {
+ *     ...
+ * }
+ * }
+ * </pre>
+ * For the access to the {@code readWriteString} method be granted, two permission checkers,
+ * one for the `read:all` permission, and another one for the `write` permission, must be available:
+ * <pre>
+ * {@code
+ * &#64;PermissionChecker("read:all")
+ * public boolean canRead(SecurityIdentity identity) {
+ *     ...
+ * }
+ * &#64;PermissionChecker("write")
+ * public boolean canWrite(SecurityIdentity identity) {
+ *     ...
+ * }
+ * }
+ * </pre>
+ * Note that a permission checker matches one of the {@link PermissionsAllowed} permissions if their String names are equal.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
