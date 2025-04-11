@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/project.yml'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '.github/project.yml'
 
 jobs:
   # This is a hack to work around a GitHub API limitation:
