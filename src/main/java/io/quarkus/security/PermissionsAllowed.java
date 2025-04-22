@@ -23,7 +23,7 @@ public @interface PermissionsAllowed {
      * annotation:
      * <pre>
      * {@code
-     * &#64;PermissionsAllowed(value = "resource:retrieve", permission = UserPermission.class)
+     * @PermissionsAllowed(value = "resource:retrieve", permission = UserPermission.class)
      * public Resource getResource(String param1, String param2, String param3) {
      *      // business logic
      * }
@@ -42,6 +42,7 @@ public @interface PermissionsAllowed {
      *     ...
      * }
      * }
+     * </pre>
      * If no method parameter name matches the constructor parameter name, Quarkus checks names of fields and methods
      * declared on the method parameter type.
      * For example:
@@ -53,12 +54,11 @@ public @interface PermissionsAllowed {
      *
      * }
      *
-     * &#64;PermissionsAllowed(value = "resource:retrieve", permission = UserPermission.class)
+     * @PermissionsAllowed(value = "resource:retrieve", permission = UserPermission.class)
      * public Resource getResource(BeanParam1 beanParam) {
      *      // business logic
      * }
      *
-     * }
      * }
      * </pre>
      * In this example, resolution of the {@code param1} and {@code param3} formal parameters is unambiguous.
@@ -71,14 +71,18 @@ public @interface PermissionsAllowed {
      * For example, {@link StringPermission} created for the 'getResource' method:
      *
      * <pre>
-     * &#64;PermissionsAllowed("resource:retrieve")
+     * {@code
+     * @PermissionsAllowed("resource:retrieve")
      * public Resource getResource() {
      *     // business logic
+     * }
      * }
      * </pre>
      * is equal to the {@code perm}:
      * <pre>
+     * {@code
      * var perm = new StringPermission("resource", "retrieve");
+     * }
      * </pre>
      */
     String PERMISSION_TO_ACTION_SEPARATOR = ":";
@@ -89,41 +93,51 @@ public @interface PermissionsAllowed {
      * Consider the `getResource` method:
      *
      * <pre>
-     * &#64;PermissionsAllowed({"resource:crud", "resource:retrieve", "system-resource:retrieve"})
+     * {@code
+     * @PermissionsAllowed({"resource:crud", "resource:retrieve", "system-resource:retrieve"})
      * public Resource getResource() {
      *     // business logic
+     * }
      * }
      * </pre>
      *
      * Two {@link StringPermission} permissions will be created:
      *
      * <pre>
+     * {@code
      * var pem1 = new StringPermission("resource", "crud", "retrieve");
      * var pem2 = new StringPermission("system-resource", "retrieve");
+     * }
      * </pre>
      *
      * The permission check will pass if either {@code pem1} or {@code pem2} implies user permissions.
      * It is also possible to combine permissions with and without actions like this:
      *
      * <pre>
-     * &#64;PermissionsAllowed({"resource:crud", "resource:retrieve", "natural-resource"})
+     * {@code
+     * @PermissionsAllowed({"resource:crud", "resource:retrieve", "natural-resource"})
      * public Resource getResource() {
      *     // business logic
+     * }
      * }
      * </pre>
      *
      * Quarkus will create two permissions:
      *
      * <pre>
+     * {@code
      * var pem1 = new StringPermission("resource", "crud", "retrieve");
      * var pem2 = new StringPermission("natural-resource");
+     * }
      * </pre>
      * Alternatively, when multiple required permissions must be listed, you can repeat the annotation, for example:
      * <pre>
-     * &#64;PermissionsAllowed("create")
-     * &#64;PermissionsAllowed("update")
+     * {@code
+     * @PermissionsAllowed("create")
+     * @PermissionsAllowed("update")
      * public Resource createOrUpdate(Long id) {
           // business logic
+     * }
      * }
      * </pre>
      *
@@ -136,21 +150,25 @@ public @interface PermissionsAllowed {
     /**
      * Choose a relation between multiple permissions specified in {@link #value()}.
      * By default, at least one of permissions must be granted.
-     * You can request that all of the listed  permissions by setting the `inclusive` property to `true`.
+     * You can request that all listed permissions by setting the `inclusive` property to `true`.
      * For example:
      *
      * <pre>
-     * &#64;PermissionsAllowed(value = {"resource:crud", "resource:retrieve", "natural-resource"}, inclusive = true)
+     * {@code
+     * @PermissionsAllowed(value = {"resource:crud", "resource:retrieve", "natural-resource"}, inclusive = true)
      * public Resource getResource() {
      *     // business logic
+     * }
      * }
      * </pre>
      *
      * Two {@link StringPermission}s will be created:
      *
      * <pre>
+     * {@code
      * var pem1 = new StringPermission("resource", "crud", "retrieve");
      * var pem2 = new StringPermission("system-resource", "retrieve");
+     * }
      * </pre>
      *
      * And the permission check will pass if <b>both</b> {@code pem1} and {@code pem2} imply user permissions.
@@ -164,17 +182,21 @@ public @interface PermissionsAllowed {
      * Consider the following three classes:
      *
      * <pre>
+     * {@code
      * class ResourceIdentity { }
      * class User extends ResourceIdentity { }
      * class Admin extends ResourceIdentity { }
+     * }
      * </pre>
      *
      * Next, consider the secured 'getResource' method:
      *
      * <pre>
-     * &#64;PermissionsAllowed(permission = UserPermission.class, value = "resource", params = {user1, admin1})
+     * {@code
+     * @PermissionsAllowed(permission = UserPermission.class, value = "resource", params = {user1, admin1})
      * public Resource getResource(User user, User user1, Admin admin, Admin admin1) {
      *     // business logic
+     * }
      * }
      * </pre>
      *
@@ -182,6 +204,7 @@ public @interface PermissionsAllowed {
      * arguments:
      *
      * <pre>
+     * {@code
      * public class UserPermission extends Permission {
      *
      *     private final ResourceIdentity user;
@@ -194,6 +217,7 @@ public @interface PermissionsAllowed {
      *     }
      *
      *     ...
+     * }
      * }
      * </pre>
      *
@@ -209,7 +233,7 @@ public @interface PermissionsAllowed {
      * Consider the following secured method and its parameters:
      * <pre>
      * {@code
-     * &#64;PermissionsAllowed(permission = UserPermission.class, value = "resource", params = {"admin1.param1", "user1.param3"})
+     * @PermissionsAllowed(permission = UserPermission.class, value = "resource", params = {"admin1.param1", "user1.param3"})
      * public Resource getResource(User user, User user1, Admin admin, Admin admin1) {
      *     // business logic
      * }
@@ -232,12 +256,14 @@ public @interface PermissionsAllowed {
      * The corresponding {@code UserPermission} constructor would look like this:
      *
      * <pre>
+     * {@code
      * public class UserPermission extends Permission {
      *
      *     public UserPermission(String name, String param1, String param3) {
      *     }
      *
      *     ...
+     * }
      * }
      * </pre>
      *
@@ -256,6 +282,7 @@ public @interface PermissionsAllowed {
      * For example:
      *
      * <pre>
+     * {@code
      * public class UserPermission extends Permission {
      *
      *     private final String[] permissions;
@@ -266,6 +293,7 @@ public @interface PermissionsAllowed {
      *     }
      *
      *     ...
+     * }
      * }
      * </pre>
      *

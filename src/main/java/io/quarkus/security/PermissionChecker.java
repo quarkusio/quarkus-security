@@ -11,16 +11,16 @@ import java.lang.annotation.Target;
  * For example:
  * <pre>
  * {@code
- * &#64;Path("hello")
+ * @Path("hello")
  * public class HelloResource {
  *
- *     &#64;PermissionsAllowed("speak")
- *     &#64;GET
+ *     @PermissionsAllowed("speak")
+ *     @GET
  *     public String sayHello() {
  *         return "Hello World!";
  *     }
  *
- *     &#64;PermissionChecker("speak")
+ *     @PermissionChecker("speak")
  *     public boolean canSpeak(SecurityIdentity identity) {
  *         return "speaker".equals(identity.getPrincipal().getName());
  *     }
@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * Consider the following secured method:
  * <pre>
  * {@code
- * &#64;PermissionsAllowed("update")
+ * @PermissionsAllowed("update")
  * public String updateString(String a, String b, String c, String d) {
  *     ...
  * }
@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
  * any of the {@code updateString} method parameters, {@link io.quarkus.security.identity.SecurityIdentity} can also be included:
  * <pre>
  * {@code
- * &#64;PermissionChecker("update")
+ * @PermissionChecker("update")
  * public boolean canUpdate(String c, String a, SecurityIdentity identity) {
  *     ...
  * }
@@ -54,7 +54,7 @@ import java.lang.annotation.Target;
  * Consider the following secured method:
  * <pre>
  * {@code
- * &#64;PermissionsAllowed(value={"read:all", "write"}, inclusive=true)
+ * @PermissionsAllowed(value={"read:all", "write"}, inclusive=true)
  * public String readWriteString(String a) {
  *     ...
  * }
@@ -64,11 +64,11 @@ import java.lang.annotation.Target;
  * one for the `read:all` permission, and another one for the `write` permission, must be available:
  * <pre>
  * {@code
- * &#64;PermissionChecker("read:all")
+ * @PermissionChecker("read:all")
  * public boolean canRead(SecurityIdentity identity) {
  *     ...
  * }
- * &#64;PermissionChecker("write")
+ * @PermissionChecker("write")
  * public boolean canWrite(SecurityIdentity identity) {
  *     ...
  * }
