@@ -15,7 +15,7 @@
     <properties>
         <cdi-api.version>4.0.1</cdi-api.version>
         <jboss-logging.version>3.6.1.Final</jboss-logging.version>
-        <mutiny.version>2.8.0</mutiny.version>
+        <mutiny.version>3.0.1</mutiny.version>
     </properties>
     <dependencies>
         <dependency>
