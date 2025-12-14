@@ -46,7 +46,7 @@
     <scm>
         <connection>scm:git:git@github.com:quarkusio/quarkus-security.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/quarkus-security.git</developerConnection>
-        <url>https://github.com/quarkus/quarkus-security</url>
+        <url>https://github.com/quarkusio/quarkus-security</url>
         <tag>HEAD</tag>
     </scm>
 
