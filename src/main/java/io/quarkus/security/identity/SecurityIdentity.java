@@ -5,6 +5,7 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.Set;
 
+import io.quarkus.security.StringPermission;
 import io.quarkus.security.credential.Credential;
 import io.smallrye.mutiny.Uni;
 
@@ -60,15 +61,22 @@ public interface SecurityIdentity {
 
     /**
      * Checks if a security identity has a given role. These roles must be resolvable in advance for every request.
-     * <p>
-     * If more advanced authorization support is required than can be provided by a simple role based system
-     * then {@link #checkPermission(Permission)} and {@link #checkPermissionBlocking(Permission)} should be used
-     * instead.
-     * <p>
      *
      * @return <code>true</code> if the identity has the specified role.
      */
     boolean hasRole(String role);
+
+    /**
+     * Returns an unmodifiable set of permissions held by the security identity that have already been resolved
+     * and can be represented as {@link Permission}.
+     * <p>
+     * Note that this set of permissions is not guaranteed to represent a complete set of permissions held by the identity.
+     * For example, a JSON Web Token (JWT) token scope might be represented as a {@link Permission} instance, while an unresolved permission
+     * that requires an asynchronous or remote permission check can not be.
+     *
+     * @return The set of resolved permissions that can be represented as {@link Permission}
+     */
+    Set<Permission> getPermissions();
 
     /**
      * Gets the security identity credential of the given type, or <code>null</code> if a credential of the given type is not
@@ -119,7 +127,7 @@ public interface SecurityIdentity {
     Uni<Boolean> checkPermission(Permission permission);
 
     /**
-     * Checks if a user holds a given permission.
+     * Checks if a security identity holds a given permission.
      * <p>
      * This method is a blocking version of {@link #checkPermission(Permission)}..
      *
@@ -127,6 +135,32 @@ public interface SecurityIdentity {
      * @return true if the security identity has the specified permission
      */
     default boolean checkPermissionBlocking(Permission permission) {
+        return checkPermission(permission).await().indefinitely();
+    }
+
+    /**
+     * Checks if a security identity holds a given permission.
+     * <p>
+     * This method is asynchronous, as it may involve calls to a remote resource.
+     *
+     * @param permission The permission
+     * @return Uni that will resolve to true if the security identity has the specified permission
+     */
+    default Uni<Boolean> checkPermission(String permission) {
+    	return checkPermission(new StringPermission(permission));
+    }
+
+    /**
+     * Checks if a security identity holds a given permission.
+     * <p>
+     * This method is a blocking version of {@link #checkPermission(Permission)}. By default it will
+     * just wait for the {@link CompletionStage} to be complete, however it is likely that some implementations
+     * will want to provide a more efficient version.
+     *
+     * @param permission The permission
+     * @return Uni that will resolve to true if the security identity has the specified permission
+     */
+    default boolean checkPermissionBlocking(String permission) {
         return checkPermission(permission).await().indefinitely();
     }
 }
