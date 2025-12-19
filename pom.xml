@@ -16,6 +16,10 @@
         <cdi-api.version>4.0.1</cdi-api.version>
         <jboss-logging.version>3.6.1.Final</jboss-logging.version>
         <mutiny.version>3.1.0</mutiny.version>
+
+        <!-- maven-release-plugin -->
+        <releaseProfiles>release</releaseProfiles>
+        <signTag>false</signTag><!-- we don't sign tags as we don't want GPG secrets available in repository -->
     </properties>
     <dependencies>
         <dependency>
