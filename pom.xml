@@ -16,7 +16,7 @@
 
     <properties>
         <cdi-api.version>4.0.1</cdi-api.version>
-        <jboss-logging.version>3.6.1.Final</jboss-logging.version>
+        <jboss-logging.version>3.6.2.Final</jboss-logging.version>
         <mutiny.version>3.1.0</mutiny.version>
 
         <!-- maven-release-plugin -->
