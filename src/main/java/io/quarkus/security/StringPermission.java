@@ -1,7 +1,6 @@
 package io.quarkus.security;
 
 import java.security.Permission;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -108,7 +107,9 @@ public final class StringPermission extends Permission {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(toString().toCharArray());
+        int result = getName().hashCode();
+        result = 31 * result + actions.hashCode();
+        return result;
     }
 
     /**
