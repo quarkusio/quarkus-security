@@ -1,5 +1,7 @@
 package io.quarkus.security.identity.request;
 
+import java.util.Map;
+
 /**
  * A request the for the Anonymous identity
  */
@@ -7,4 +9,13 @@ public final class AnonymousAuthenticationRequest extends BaseAuthenticationRequ
 
     public static final AnonymousAuthenticationRequest INSTANCE = new AnonymousAuthenticationRequest();
 
+    @Override
+    public void setAttribute(String name, Object value) {
+        throw new UnsupportedOperationException("Attributes are not supported on AnonymousAuthenticationRequest");
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return Map.of();
+    }
 }
