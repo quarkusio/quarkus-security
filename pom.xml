@@ -15,7 +15,7 @@
     <name>Quarkus Security API</name>
 
     <properties>
-        <cdi-api.version>4.1.0</cdi-api.version>
+        <cdi-api.version>5.0.0</cdi-api.version>
         <jboss-logging.version>3.6.1.Final</jboss-logging.version>
         <mutiny.version>3.3.0</mutiny.version>
 
